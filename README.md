@@ -10,7 +10,7 @@ The Printf project is dedicated to the recreation of the printf function.
 
 ## Cub3D
 
-The Cub3D is a raycast project where you need to recreate the game engine of Wolf3D
+The Cub3D is a raycast project where you need to recreate the game engine of Wolf3D with the help of the miniLibX
 
 ### Screenshot
 ![Image text](/Cub3D/save.bmp)
