@@ -1,9 +1,5 @@
 # Here you can find some of my 42 Projects :
 
-## Libft
-
-The Libft is a librairie of recreated function  like strlen, strcmp, atoi, ...
-
 ## PrintF
 
 The Printf project is dedicated to the recreation of the printf function.
