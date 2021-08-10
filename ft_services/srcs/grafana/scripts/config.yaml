@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+        - name: InfluxDB
+          type: influxdb
+          access: proxy
+          orgID: 1
+          url: http://influx-service:8086
+          database: grafana
+          user: graf_user
+          password: password
+          isDefault: true
+          version: 1
+          editable: true

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      protocol: TCP
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-mysql
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: mysql-pvc
+  hostPath:
+    path: /pv/mysqlpv
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  labels:
+    app: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql_img # tag that we gave to the docker image when we build it
+        imagePullPolicy: Never # allow to pull a local docker image
+        livenessProbe:
+          exec:
+            command:
+            - /home/script/./liveprobe.sh
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 2
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-config
+          mountPath: /etc/my.cnf.d/mariadb-server.cnf
+          subPath: mariadb-server.cnf
+        - name: mysql-pvc # using volume to save datas if pod crashes
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-config
+        configMap:
+          name: mysql-config
+          items:
+          - key: mysql.cnf
+            path: mariadb-server.cnf
+      - name: mysql-pvc
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  namespace: default
+data:
+  mysql.cnf: |
+    [mysqld]
+    user = root
+    port = 3306
+    datadir = /var/lib/mysql
+    bind-address = 0.0.0.0
+    skip-networking = false
+---
